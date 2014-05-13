@@ -1,10 +1,12 @@
 {
-   "name": "cisnos",
-   "version": "0.0.1",
-   "description": "A Sonos controller as a XML Service for Cisco IP phones.",
-   "author": "Scott Vandelrind <scottv@ifixit.com>",
-   "dependencies": {
-      "sonos": "x.x.x",
-      "express": "x.x.x"
-   }
+  "name": "cisnos",
+  "version": "0.0.1",
+  "description": "A Sonos controller as a XML Service for Cisco IP phones.",
+  "author": "Scott Vandelrind <scottv@ifixit.com>",
+  "dependencies": {
+    "sonos": "x.x.x",
+    "express": "x.x.x",
+    "xmlbuilder": "x.x.x",
+    "collections": "~1.1.0"
+  }
 }
