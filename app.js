@@ -1,4 +1,6 @@
-var Sonos = require('sonos');
+var Sonos = require('sonos'),
+    Express = require('express'),
+    app = Express();
 
 // our devices
 var devices = [];
@@ -15,3 +17,11 @@ Sonos.search(function (device) {
    });
 });
 
+app.get('/', function (req, res) {
+   var json = { players : devices };
+   res.json(json);
+});
+
+var server = app.listen(3000, function() {
+   console.log('Listening on %d', server.address().port);
+});

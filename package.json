@@ -4,6 +4,7 @@
    "description": "A Sonos controller as a XML Service for Cisco IP phones.",
    "author": "Scott Vandelrind <scottv@ifixit.com>",
    "dependencies": {
-      "sonos": "x.x.x"
+      "sonos": "x.x.x",
+      "express": "x.x.x"
    }
 }
