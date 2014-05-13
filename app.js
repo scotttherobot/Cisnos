@@ -56,31 +56,39 @@ app.get('/', function (req, res, next) {
 });
 
 app.get('/:id', function (req, res, next) {
-   var device = devices.get(req.params.id);
-   if (!device) {
+   var player = devices.get(req.params.id);
+   if (!player) {
       res.status(404).send(error('No player found by that ID'));
       return;
    }
 
-   var root = builder.create('CiscoIPPhoneText');
-   root.ele('Title', device.attributes.CurrentZoneName);
-   root.ele('Prompt', 'Now Playing:');
-   root.ele('Text', 'Amy Winehouse');
-
    var softkeys = [
-      { name : "play", action : "play" },
-      { name : "pause", action : "pause" },
-      { name : "v+", action : "volup" },
-      { name : "v-", action : "voldown"}
+      { name : "-", action : "vdown" },
+      { name : "+", action : "vup" },
+      { name : ">>", action : "next" }
    ];
 
-   for (var k in softkeys) {
-      var key = root.ele('SoftKeyItem');
-      key.ele('Name', softkeys[k].name);
-      key.ele('URL', "/" + req.params.id + "/" + softkeys[k].action);
-      key.ele('position', parseInt(k) + 1);
-   }
+   // Get the current state so we know what actions to make available to it
+   player.device.getCurrentState(function (err, state) {
+      if (state == 'stopped' || state == 'paused') {
+         softkeys.push({ name : "play", action : "play" });
+      } else {
+         softkeys.push({ name : "pause", action : "pause" });
+      }
 
-   res.send(root.end({ pretty : true }));
+      var root = builder.create('CiscoIPPhoneText');
+      root.ele('Title', player.attributes.CurrentZoneName);
+      root.ele('Prompt', 'Now Playing:');
+      root.ele('Text', 'Amy Winehouse');
+
+      for (var k in softkeys) {
+         var key = root.ele('SoftKeyItem');
+         key.ele('Name', softkeys[k].name);
+         key.ele('URL', "/" + req.params.id + "/" + softkeys[k].action);
+         key.ele('position', parseInt(k) + 1);
+      }
+
+      res.send(root.end({ pretty : true }));
+   });
 });
 
