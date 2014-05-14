@@ -49,7 +49,7 @@ app.get('/', function (req, res, next) {
    devices.forEach(function (device, key) {
       var item = root.ele('MenuItem');
       item.ele('Name', device.attributes.CurrentZoneName)
-      item.ele('URL', "/" + key);
+      item.ele('URL', "http://192.168.0.42:3000/" + key);
    });
 
    res.send(root.end({ pretty: true }));
@@ -65,7 +65,7 @@ app.get('/:id', function (req, res, next) {
    var softkeys = [
       { name : "-", action : "vdown" },
       { name : "+", action : "vup" },
-      { name : ">>", action : "next" }
+      { name : "next", action : "next" }
    ];
 
    // Get the current state so we know what actions to make available to it
@@ -75,20 +75,21 @@ app.get('/:id', function (req, res, next) {
       } else {
          softkeys.push({ name : "pause", action : "pause" });
       }
+      player.device.currentTrack(function (err, track) {
+         var root = builder.create('CiscoIPPhoneText');
+         root.ele('Title', player.attributes.CurrentZoneName);
+         root.ele('Prompt', 'Now Playing: ' + track.title);
+         root.ele('Text', "Track: " + track.title + "\nArtist: " + track.artist + "\nAlbum: " + track.album);
 
-      var root = builder.create('CiscoIPPhoneText');
-      root.ele('Title', player.attributes.CurrentZoneName);
-      root.ele('Prompt', 'Now Playing:');
-      root.ele('Text', 'Amy Winehouse');
+         for (var k in softkeys) {
+            var key = root.ele('SoftKeyItem');
+            key.ele('Name', softkeys[k].name);
+            key.ele('URL', "http://192.168.0.42:3000/" + req.params.id + "/" + softkeys[k].action);
+            key.ele('Position', parseInt(k) + 1);
+         }
 
-      for (var k in softkeys) {
-         var key = root.ele('SoftKeyItem');
-         key.ele('Name', softkeys[k].name);
-         key.ele('URL', "/" + req.params.id + "/" + softkeys[k].action);
-         key.ele('position', parseInt(k) + 1);
-      }
-
-      res.send(root.end({ pretty : true }));
+         res.send(root.end({ pretty : true }));
+      });
    });
 });
 
