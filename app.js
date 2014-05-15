@@ -49,17 +49,50 @@ app.get('/', function (req, res, next) {
    devices.forEach(function (device, key) {
       var item = root.ele('MenuItem');
       item.ele('Name', device.attributes.CurrentZoneName)
-      item.ele('URL', "http://192.168.0.42:3000/" + key);
+      item.ele('URL', "http://" + req.headers.host + "/" + key);
    });
 
    res.send(root.end({ pretty: true }));
 });
 
-app.get('/:id', function (req, res, next) {
+app.get('/:id/:action?', function (req, res, next) {
    var player = devices.get(req.params.id);
    if (!player) {
       res.status(404).send(error('No player found by that ID'));
       return;
+   }
+   // If there's an action to do, do it.
+   if (req.params.action) {
+      switch (req.params.action) {
+         case "play":
+            player.device.play(function (err, playing) {
+            });
+            break;
+         case "pause":
+            player.device.pause(function (err, paused) {
+            });
+            break;
+         case "vdown":
+            player.device.getVolume(function (err, volume) {
+               player.device.setVolume(parseInt(volume) - 2, function (err, data) {
+               });
+            });
+            break;
+         case "vup":
+            player.device.getVolume(function (err, volume) {
+               player.device.setVolume(parseInt(volume) + 2, function (err, data) {
+               });
+            });
+            break;
+         case "next":
+            player.device.next(function (err, movedToNext) {
+            });
+            break;
+         case "prev":
+            player.device.previous(function (err, movedToPrevious) {
+            });
+            break;
+      }
    }
 
    var softkeys = [
@@ -84,7 +117,7 @@ app.get('/:id', function (req, res, next) {
          for (var k in softkeys) {
             var key = root.ele('SoftKeyItem');
             key.ele('Name', softkeys[k].name);
-            key.ele('URL', "http://192.168.0.42:3000/" + req.params.id + "/" + softkeys[k].action);
+            key.ele('URL', "http://" + req.headers.host + "/" + req.params.id + "/" + softkeys[k].action);
             key.ele('Position', parseInt(k) + 1);
          }
 
