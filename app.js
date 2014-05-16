@@ -108,39 +108,41 @@ app.get('/:id/:action?/:uri?', function (req, res, next) {
       switch (req.params.action) {
          // Plays a playlist
          case "pl":
-            player.device.flush(function (err, flushed) {
-               var playlist = playlists.get(parseInt(req.params.uri));
-               var tracks = playlist.tracks;
-               var queued = 0;
-               // queue every track, depending on the track type.
-               for (var i = 0; i < tracks.length; i++) {
-                  switch (tracks[i].type) {
-                  case "spotify":
-                     player.device.queueSpotify(tracks[i].uri, function (err, data) {
-                        queued = queued + 1;
-                        if (queued >= tracks.length) {
-                           console.log("Sending play... queued is", queued);
-                           player.device.play(function (err, playing) {
-                              console.log("play sent");
-                              console.log(err, playing);
-                           });
-                        }
-                     });
-                     break;
-                  case "mp3":
-                     player.device.queue(tracks[i].uri, function (err, queuedit) {
-                        queued = queued + 1;
-                        if (queued >= tracks.length) {
-                           console.log("Sending play... queued is", queued);
-                           player.device.play(function (err, playing) {
-                              console.log("play sent");
-                              console.log(err, playing);
-                           });
-                        }
-                     });
-                     break;
+            player.device.stop(function (err, stopped) {
+               player.device.flush(function (err, flushed) {
+                  var playlist = playlists.get(parseInt(req.params.uri));
+                  var tracks = playlist.tracks;
+                  var queued = 0;
+                  // queue every track, depending on the track type.
+                  for (var i = 0; i < tracks.length; i++) {
+                     switch (tracks[i].type) {
+                     case "spotify":
+                        player.device.queueSpotify(tracks[i].uri, function (err, data) {
+                           queued = queued + 1;
+                           if (queued >= tracks.length) {
+                              console.log("Sending play... queued is", queued);
+                              player.device.play(function (err, playing) {
+                                 console.log("play sent");
+                                 console.log(err, playing);
+                              });
+                           }
+                        });
+                        break;
+                     case "mp3":
+                        player.device.queue(tracks[i].uri, function (err, queuedit) {
+                           queued = queued + 1;
+                           if (queued >= tracks.length) {
+                              console.log("Sending play... queued is", queued);
+                              player.device.play(function (err, playing) {
+                                 console.log("play sent");
+                                 console.log(err, playing);
+                              });
+                           }
+                        });
+                        break;
+                     }
                   }
-               }
+               });
             });
             break;
          case "uri":

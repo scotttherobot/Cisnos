@@ -12,7 +12,11 @@ var playlists = [];
 // For each file name passed in, read it, and put them
 // all into the same playlist file.
 args.forEach(function (val, index, array) {
-   var playlistName = val.replace(/\..+$/, '');
+   var fileName = val.replace(/.+\//, '');
+   // Strip the file extension
+   var playlistName = fileName.replace(/\..+$/, '');
+   // Replace underscores with spaces
+   playlistName = playlistName.replace(/_/g, ' ');
    var data = fs.readFileSync(val, 'utf-8');
    var lines = data.split(/\r\n|\r|\n/g);
    var playlist = { "title" : playlistName, "tracks" : [ ] };
