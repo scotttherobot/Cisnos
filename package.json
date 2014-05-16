@@ -7,6 +7,6 @@
     "sonos": "x.x.x",
     "express": "x.x.x",
     "xmlbuilder": "x.x.x",
-    "collections": "~1.1.0"
+    "collections": "~2.1.0"
   }
 }

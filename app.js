@@ -2,6 +2,8 @@ var Sonos = require('sonos'),
     Express = require('express'),
     builder = require('xmlbuilder'),
     SortedMap = require('collections/sorted-map'),
+    Iterator = require('collections/shim-array'),
+    fs = require('fs'),
     app = Express();
 
 // Create the HTTP server
@@ -17,6 +19,8 @@ app.use(function(req, res, next) {
 
 // our devices
 var devices = new SortedMap();
+// And playlists read from file.
+var playlists = new Iterator();
 
 // Serach for devices and push them into the pool.
 Sonos.search(function (device) {
@@ -26,9 +30,20 @@ Sonos.search(function (device) {
       if (data.CurrentZoneName != "BRIDGE") {
          var player = { device : device, attributes : data };
          devices.set(device.host.split('.').join(""), player);
-         console.log(JSON.stringify(player, null, 2));
+//         console.log(JSON.stringify(player, null, 2));
       }
    });
+});
+
+fs.exists("playlists.json", function (exists) {
+   if (exists) {
+      fs.readFile("playlists.json", "utf-8", function (err, data) {
+         data = JSON.parse(data);
+         for (var i = 0; i < data.length; i++ ) {
+            playlists.push(data[i]);
+         }
+      });
+   }
 });
 
 var error = function (message) {
@@ -55,7 +70,31 @@ app.get('/', function (req, res, next) {
    res.send(root.end({ pretty: true }));
 });
 
-app.get('/:id/:action?', function (req, res, next) {
+/**
+ * A listing of all the available playlists.
+ */
+app.get('/:id/playlists', function (req, res, next) {
+   var player = devices.get(req.params.id);
+   if (!player) {
+      res.status(404).send(error('No player found by that ID'));
+      return;
+   }
+
+   var root = builder.create('CiscoIPPhoneMenu');
+   root.ele('Title', 'Available Playlists');
+   root.ele('Prompt', 'Choose a playlist to play:');
+   
+   // Foreach playlist, add an item
+   playlists.forEach(function (playlist, key) {
+      var item = root.ele('MenuItem');
+      item.ele('Name', playlist.title)
+      item.ele('URL', "http://" + req.headers.host + "/" + req.params.id + "/pl/" + key);
+   });
+
+   res.send(root.end({ pretty: true }));
+});
+
+app.get('/:id/:action?/:uri?', function (req, res, next) {
    var player = devices.get(req.params.id);
    if (!player) {
       res.status(404).send(error('No player found by that ID'));
@@ -64,7 +103,40 @@ app.get('/:id/:action?', function (req, res, next) {
    // If there's an action to do, do it.
    if (req.params.action) {
       switch (req.params.action) {
+         case "pl":
+            player.device.flush(function (err, flushed) {
+               var playlist = playlists.get(parseInt(req.params.uri));
+               var tracks = playlist.tracks;
+               // queue every track, depending on the track type.
+               for (var i = 0; i < tracks.length; i++) {
+                  switch (tracks[i].type) {
+                  case "spotify":
+                     player.device.queueSpotify(tracks[i].uri, function (err, data) {
+                     });
+                     break;
+                  case "mp3":
+                     player.device.queue(tracks[i].uri, function (err, queuedit) {
+                     });
+                     break;
+                  }
+               }
+               player.device.play(function (err, playing) {
+               });
+            });
+            break;
+         case "spotify":
+            if (req.params.uri) {
+               console.log(req.params.uri);
+               player.device.flush(function (err, flushed) {
+                  player.device.queueSpotify(req.params.uri, function (err, data) {
+                     player.device.play(function (err, playing) {
+                     });
+                  });
+               });
+            }
+            break;
          case "play":
+            // If there's a URI, play it, if not, just resume playing.
             player.device.play(function (err, playing) {
             });
             break;
@@ -98,7 +170,7 @@ app.get('/:id/:action?', function (req, res, next) {
    var softkeys = [
       { name : "-", action : "vdown" },
       { name : "+", action : "vup" },
-      { name : "next", action : "next" }
+      { name : "Playlists", action : "playlists" }
    ];
 
    // Get the current state so we know what actions to make available to it
@@ -125,4 +197,3 @@ app.get('/:id/:action?', function (req, res, next) {
       });
    });
 });
-

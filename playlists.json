@@ -1,0 +1,28 @@
+[
+{
+   "title" : "Good Songs!",
+   "tracks" : [
+   {
+      "type" : "spotify",
+      "uri" : "3H9DlQEsjB0whMWy9g4MCX"
+   },
+   {
+      "type" : "spotify",
+      "uri" : "6BFy7jDjmBIero9RvFyiFR"
+   }
+   ]
+},
+{
+   "title" : "80's Songs",
+   "tracks" : [
+   {
+      "type" : "spotify",
+      "uri" : "3H9DlQEsjB0whMWy9g4MCX"
+   },
+   {
+      "type" : "spotify",
+      "uri" : "6BFy7jDjmBIero9RvFyiFR"
+   }
+   ]
+}
+]
