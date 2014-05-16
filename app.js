@@ -112,16 +112,25 @@ app.get('/:id/:action?/:uri?', function (req, res, next) {
                   switch (tracks[i].type) {
                   case "spotify":
                      player.device.queueSpotify(tracks[i].uri, function (err, data) {
+                        console.log(err, data);
+                        // TOOD only do this when index = 0 
+                        // ALso investigate the 500 error that's getting returned
+                        player.device.play(function (err, playing) {
+                           console.log("play sent");
+                           console.log(err, playing);
+                        });
                      });
                      break;
                   case "mp3":
                      player.device.queue(tracks[i].uri, function (err, queuedit) {
+                        if (i == 0) {
+                           player.device.play(function (err, playing) {
+                           });
+                        }
                      });
                      break;
                   }
                }
-               player.device.play(function (err, playing) {
-               });
             });
             break;
          case "spotify":
