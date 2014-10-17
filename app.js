@@ -213,10 +213,13 @@ app.get('/:id/:action?/:uri?', function (req, res, next) {
          softkeys.push({ name : "pause", action : "pause" });
       }
       player.device.currentTrack(function (err, track) {
-         var curMin = Math.floor(parseInt(track.position) / 60);
-         var curSec = parseInt(track.position) - curMin * 60;
-         var totalMin = Math.floor(parseInt(track.duration) / 60);
-         var totalSec = parseInt(track.duration) - totalMin * 60;
+         var curMin = 0, curSec = 0, totalMin = 0, totalSec = 0;
+         if (track) {
+            curMin = Math.floor(parseInt(track.position) / 60);
+            curSec = parseInt(track.position) - curMin * 60;
+            totalMin = Math.floor(parseInt(track.duration) / 60);
+            totalSec = parseInt(track.duration) - totalMin * 60;
+         }
          //console.log(track);
          var root = builder.create('CiscoIPPhoneText');
          root.ele('Title', player.attributes.CurrentZoneName);
